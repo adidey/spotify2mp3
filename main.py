@@ -8,9 +8,14 @@ from tkinter import filedialog, messagebox
 
 
 # Spotify API Setup
+<<<<<<< HEAD
 SPOTIFY_CLIENT_ID = '4a477e5b6497416bba8da1a7d68e4a7c' 
 SPOTIFY_CLIENT_SECRET = 'f9b5f43e80ec4f7295a1b2aac662f5d2'
 SPOTIFY_REDIRECT_URI = 'http://localhost:8888/callback'
+=======
+SPOTIFY_CLIENT_ID = 'YOUTUBE_API_KEY' 
+SPOTIFY_CLIENT_SECRET = 'SPOTIFY_CLIENT_SECRET'
+>>>>>>> def123edba66601537f0249641dabf7078cf775d
 
 sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
     client_id=SPOTIFY_CLIENT_ID,
@@ -20,7 +25,7 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
 ))
 
 # YouTube API Setup
-YOUTUBE_API_KEY = 'AIzaSyB0XyaohMpUpSL_64iFD96YPCukp-lJsIQ'
+YOUTUBE_API_KEY = 'YOUTUBE_API_KEY'
 youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
 
 # Function to search for a song on Spotify

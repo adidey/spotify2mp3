@@ -23,7 +23,7 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
 ))
 
 # YouTube API Setup
-YOUTUBE_API_KEY = 'AIzaSyB0XyaohMpUpSL_64iFD96YPCukp-lJsIQ'
+YOUTUBE_API_KEY = 'YOUTUBE_API_KEY'
 youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
 
 # Function to search for a song on Spotify

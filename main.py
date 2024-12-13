@@ -5,17 +5,15 @@ import subprocess
 import os
 import tkinter as tk
 from tkinter import filedialog, messagebox
+from io import BytesIO
+from PIL import ImageTk, Image
+import requests
 
 
 # Spotify API Setup
-<<<<<<< HEAD
 SPOTIFY_CLIENT_ID = '4a477e5b6497416bba8da1a7d68e4a7c' 
 SPOTIFY_CLIENT_SECRET = 'f9b5f43e80ec4f7295a1b2aac662f5d2'
 SPOTIFY_REDIRECT_URI = 'http://localhost:8888/callback'
-=======
-SPOTIFY_CLIENT_ID = 'YOUTUBE_API_KEY' 
-SPOTIFY_CLIENT_SECRET = 'SPOTIFY_CLIENT_SECRET'
->>>>>>> def123edba66601537f0249641dabf7078cf775d
 
 sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
     client_id=SPOTIFY_CLIENT_ID,
@@ -25,7 +23,7 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
 ))
 
 # YouTube API Setup
-YOUTUBE_API_KEY = 'YOUTUBE_API_KEY'
+YOUTUBE_API_KEY = 'AIzaSyB0XyaohMpUpSL_64iFD96YPCukp-lJsIQ'
 youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
 
 # Function to search for a song on Spotify
@@ -34,10 +32,12 @@ def search_spotify(song_name, artist_name):
     results = sp.search(q=query, limit=1, type='track')
     if results['tracks']['items']:
         track = results['tracks']['items'][0]
+        album_art_url = track['album']['images'][0]['url']  # Get highest res image
         return {
             'name': track['name'],
             'artist': track['artists'][0]['name'],
-            'duration_ms': track['duration_ms'] // 1000
+            'duration_ms': track['duration_ms'] // 1000,
+            'album_art': album_art_url
         }
     return None
 
@@ -56,17 +56,26 @@ def search_youtube(song_name, artist):
     return None
 
 # Function to download audio using yt-dlp
-def download_audio(youtube_url, output_path='downloads'):
+def download_audio(youtube_url, spotify_data, output_path='downloads'):
     if not os.path.exists(output_path):
         os.makedirs(output_path)
     
     command = [
         'yt-dlp',
         '-x', '--audio-format', 'mp3',
+        '--embed-thumbnail', # Embed thumbnail in metadata (if available)
         '--output', f"{output_path}/%(title)s.%(ext)s",
         youtube_url
     ]
     subprocess.run(command)
+    if spotify_data and spotify_data.get('album_art'):
+        try:
+            response = requests.get(spotify_data['album_art'])
+            response.raise_for_status() # Raise an exception for bad status codes
+            image = Image.open(BytesIO(response.content))
+            image.save(f"{output_path}/{spotify_data['name']}.jpg")  # Save as jpg
+        except requests.exceptions.RequestException as e:
+            print(f"Error downloading album art: {e}")
 
 # Function to fetch user's playlists
 def get_user_playlists():
@@ -80,12 +89,12 @@ def process_playlist(playlist_id):
         track = item['track']
         artist_name = track['artists'][0]['name']
         song_name = track['name']
-        spotify_data = search_spotify(song_name, artist_name)
 
+        spotify_data = search_spotify(song_name, artist_name)
         if spotify_data:
             youtube_url = search_youtube(spotify_data['name'], spotify_data['artist'])
             if youtube_url:
-                download_audio(youtube_url)
+                download_audio(youtube_url, spotify_data)
 
 # GUI Application
 def run_app():
@@ -111,6 +120,9 @@ def run_app():
         process_playlist(playlist_id)
         messagebox.showinfo("Success", "Playlist processed and downloads complete!")
 
+    def add_cover_art():
+        selected_playlist = playlist_var.get()
+       
     # GUI Setup
     root = tk.Tk()
     root.title("Spotify to MP3 Downloader")

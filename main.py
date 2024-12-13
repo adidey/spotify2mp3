@@ -77,6 +77,21 @@ def download_audio(youtube_url, spotify_data, output_path='downloads'):
         except requests.exceptions.RequestException as e:
             print(f"Error downloading album art: {e}")
 
+#Function to get whether user wants to download individual song 
+def download_individual_song():
+    song_name = input("Enter the name of the song: ")
+    artist_name = input("Enter the name of the artist: ")
+    spotify_data = search_spotify(song_name, artist_name)
+    if spotify_data:
+        youtube_url = search_youtube(song_name, artist_name)
+        if youtube_url:
+            download_audio(youtube_url, spotify_data)
+            print("Download complete!")
+        else:
+            print("Song not found on YouTube.")
+    else:
+        print("Song not found on Spotify.")
+        
 # Function to fetch user's playlists
 def get_user_playlists():
     playlists = sp.current_user_playlists()
@@ -120,6 +135,23 @@ def run_app():
         process_playlist(playlist_id)
         messagebox.showinfo("Success", "Playlist processed and downloads complete!")
 
+    def download_individual_song():
+        song_name = song_name_entry.get()
+        artist_name = artist_name_entry.get()
+        if not song_name or not artist_name:
+            messagebox.showerror("Error", "Please enter both song name and artist name.")
+            return
+        spotify_data = search_spotify(song_name, artist_name)
+        if spotify_data:
+            youtube_url = search_youtube(spotify_data['name'], spotify_data['artist'])
+            if youtube_url:
+                download_audio(youtube_url, spotify_data)
+                messagebox.showinfo("Success", "Download complete!")
+            else:
+                messagebox.showerror("Error", "Song not found on YouTube.")
+        else:
+            messagebox.showerror("Error", "Song not found on Spotify.")
+
     def add_cover_art():
         selected_playlist = playlist_var.get()
        
@@ -139,6 +171,20 @@ def run_app():
 
     download_button = tk.Button(root, text="Download Playlist", command=download_playlist)
     download_button.grid(row=2, column=0, columnspan=2, pady=10)
+
+     # Individual song download section
+    tk.Label(root, text="Download Individual Song:").grid(row=3, column=0, columnspan=2, pady=10)
+
+    tk.Label(root, text="Song Name:").grid(row=4, column=0, padx=10, pady=5)
+    song_name_entry = tk.Entry(root)
+    song_name_entry.grid(row=4, column=1, padx=10, pady=5)
+
+    tk.Label(root, text="Artist Name:").grid(row=5, column=0, padx=10, pady=5)
+    artist_name_entry = tk.Entry(root)
+    artist_name_entry.grid(row=5, column=1, padx=10, pady=5)
+
+    individual_download_button = tk.Button(root, text="Download Song", command=download_individual_song)
+    individual_download_button.grid(row=6, column=0, columnspan=2, pady=10)
 
     root.mainloop()
 
